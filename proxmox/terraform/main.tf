@@ -6,15 +6,15 @@ resource "proxmox_vm_qemu" "control_plane" {
   clone             = "ubuntu-2004-cloudinit-template"
 
   os_type           = "cloud-init"
-  cores             = 4
+  cores             = var.control_cores
   sockets           = "1"
   cpu               = "host"
-  memory            = 2048
+  memory            = var.control_memory
   scsihw            = "virtio-scsi-pci"
   bootdisk          = "scsi0"
 
   disk {
-    size            = "20G"
+    size            = "${var.control_disk}"
     type            = "scsi"
     storage         = "local-lvm"
     iothread        = 1
@@ -27,7 +27,7 @@ resource "proxmox_vm_qemu" "control_plane" {
 
   # cloud-init settings
   # adjust the ip and gateway addresses as needed
-  ipconfig0         = "ip=192.168.0.11${count.index}/24,gw=192.168.0.1"
+  ipconfig0         = "ip=${var.control_ip_range_start}${count.index}/24,gw=${var.ip_gateway}"
   sshkeys = file("${var.ssh_key_file}")
 }
 
@@ -39,15 +39,15 @@ resource "proxmox_vm_qemu" "worker_nodes" {
   clone             = "ubuntu-2004-cloudinit-template"
 
   os_type           = "cloud-init"
-  cores             = 4
+  cores             = var.worker_cores
   sockets           = "1"
   cpu               = "host"
-  memory            = 4098
+  memory            = var.worker_memory
   scsihw            = "virtio-scsi-pci"
   bootdisk          = "scsi0"
 
   disk {
-    size            = "20G"
+    size            = "${var.worker_disk}"
     type            = "scsi"
     storage         = "local-lvm"
     iothread        = 1
@@ -60,6 +60,6 @@ resource "proxmox_vm_qemu" "worker_nodes" {
 
   # cloud-init settings
   # adjust the ip and gateway addresses as needed
-  ipconfig0         = "ip=192.168.0.12${count.index}/24,gw=192.168.0.1"
+  ipconfig0         = "ip=${var.worker_ip_range_start}${count.index}/24,gw=${var.ip_gateway}"
   sshkeys = file("${var.ssh_key_file}")
 }
